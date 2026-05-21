@@ -1,32 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { auth } from "@/lib/firebase";
-import {
-  GoogleAuthProvider,
-  signInWithPopup,
-  signOut,
-  onAuthStateChanged,
-} from "firebase/auth";
+import { signOut } from "firebase/auth";
 
-export default function AuthButtons() {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    return onAuthStateChanged(auth, (u) => {
-      setUser(u);
-    });
-  }, []);
-
-  async function handleSignIn() {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
+export default function AuthButtons({ user }) {
   async function handleSignOut() {
     try {
       await signOut(auth);
@@ -35,21 +12,22 @@ export default function AuthButtons() {
     }
   }
 
-  if (user)
-    return (
-      <div className="flex items-center gap-3 mb-4">
-        <img src={user.photoURL} alt="avatar" className="w-8 h-8 rounded-full" />
-        <span className="text-sm">{user.displayName}</span>
-        <button onClick={handleSignOut} className="ml-2 btn">
-          Sign out
-        </button>
-      </div>
-    );
-
   return (
-    <div className="mb-4">
-      <button onClick={handleSignIn} className="btn">
-        Sign in with Google
+    <div className="flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">
+      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-cyan-400 font-semibold text-slate-950">
+        {(user?.displayName || user?.email || "U").slice(0, 1).toUpperCase()}
+      </div>
+      <div className="leading-tight">
+        <p className="font-medium text-white">
+          {user?.displayName || user?.email || "Signed in user"}
+        </p>
+        <p className="text-xs text-slate-400">Firebase authenticated</p>
+      </div>
+      <button
+        onClick={handleSignOut}
+        className="ml-2 rounded-full border border-white/10 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
+      >
+        Sign out
       </button>
     </div>
   );
