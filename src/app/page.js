@@ -13,11 +13,13 @@
 
 "use client"; // This page uses React state and effects, so it runs in the browser
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 import AddTodoForm from "@/components/AddTodoForm";
+import AppFooter from "@/components/AppFooter";
+import AppHeader from "@/components/AppHeader";
 import AuthModal from "@/components/AuthModal";
-import TodoItem from "@/components/TodoItem";
 import AuthButtons from "@/components/AuthButtons";
+import TodoItem from "@/components/TodoItem";
 import { auth, getFirebaseAuthHeaders, isFirebaseConfigured } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -27,11 +29,10 @@ export default function Home() {
   const [user, setUser] = useState(null);
   const [authReady, setAuthReady] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
-  const hydrated = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  );
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
   const canUseFirebaseAuth = hydrated && Boolean(auth);
   const firebaseMissingConfig = hydrated && !isFirebaseConfigured;
 
@@ -128,49 +129,54 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,#1f2937_0%,#0f172a_42%,#020617_100%)] px-4 py-8 text-slate-100 sm:px-6 lg:px-8">
-      <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-5xl items-center justify-center">
-        <div className="w-full overflow-hidden rounded-4xl border border-white/10 bg-slate-950/70 shadow-2xl backdrop-blur">
-          <div className="border-b border-white/10 px-6 py-6 sm:px-8">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm uppercase tracking-[0.35em] text-cyan-300/80">
-                  Firebase Todo Space
-                </p>
-                <h1 className="mt-2 text-3xl font-semibold text-white sm:text-4xl">
-                  Your tasks, synced after sign in.
-                </h1>
-                <p className="mt-2 max-w-2xl text-sm text-slate-300 sm:text-base">
-                  Use the modal to sign in or create an account. Once you are in,
-                  your todo list opens up here.
-                </p>
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl items-center justify-center">
+        <div className="w-full overflow-hidden rounded-[2rem] border border-white/10 bg-slate-950/70 shadow-2xl shadow-slate-950/40 backdrop-blur">
+          <AppHeader
+            user={user}
+            onOpenAuth={() => setAuthOpen(true)}
+            canUseFirebaseAuth={canUseFirebaseAuth}
+            authReady={authReady}
+            firebaseMissingConfig={firebaseMissingConfig}
+            todoCount={todos.length}
+          />
+
+          <main className="grid gap-6 px-6 py-6 sm:px-8 lg:grid-cols-[1.15fr_0.85fr] lg:py-8">
+            <section className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 sm:p-6">
+              <div className="mb-5 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-cyan-300/80">
+                    Your board
+                  </p>
+                  <h2 className="mt-2 text-xl font-semibold text-white sm:text-2xl">
+                    Tasks ready for action
+                  </h2>
+                </div>
+
+                <div className="hidden rounded-full border border-white/10 bg-slate-950/60 px-3 py-1.5 text-xs text-slate-400 sm:block">
+                  {todos.length === 0 ? "No tasks yet" : `${todos.length} live tasks`}
+                </div>
               </div>
 
-              {canUseFirebaseAuth && user ? <AuthButtons user={user} /> : null}
-            </div>
-          </div>
-
-          <div className="grid gap-6 px-6 py-6 sm:px-8 lg:grid-cols-[1.15fr_0.85fr]">
-            <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
               {!hydrated || (canUseFirebaseAuth && !authReady) ? (
-                <div className="flex min-h-96 flex-col justify-center rounded-2xl border border-white/10 border-dashed bg-slate-900/60 p-6 text-center">
+                <div className="flex min-h-96 flex-col justify-center rounded-3xl border border-white/10 border-dashed bg-slate-900/60 p-6 text-center">
                   <p className="text-sm uppercase tracking-[0.3em] text-cyan-300/80">
                     Loading Firebase auth
                   </p>
-                  <h2 className="mt-4 text-2xl font-semibold text-white">
+                  <h3 className="mt-4 text-2xl font-semibold text-white">
                     Preparing your signed-in workspace.
-                  </h2>
+                  </h3>
                   <p className="mt-3 text-sm text-slate-300">
-                    Waiting for the Firebase auth session before showing the workspace.
+                    Waiting for the Firebase auth session before showing the board.
                   </p>
                 </div>
               ) : canUseFirebaseAuth && !user ? (
-                <div className="flex min-h-96 flex-col justify-center rounded-2xl border border-white/10 border-dashed bg-slate-900/60 p-6 text-center">
+                <div className="flex min-h-96 flex-col justify-center rounded-3xl border border-white/10 border-dashed bg-slate-900/60 p-6 text-center">
                   <p className="text-sm uppercase tracking-[0.3em] text-cyan-300/80">
                     Authentication required
                   </p>
-                  <h2 className="mt-4 text-2xl font-semibold text-white">
+                  <h3 className="mt-4 text-2xl font-semibold text-white">
                     Sign in or create your account to continue.
-                  </h2>
+                  </h3>
                   <p className="mt-3 text-sm text-slate-300">
                     Your todo board is hidden until Firebase authentication is complete.
                   </p>
@@ -187,9 +193,9 @@ export default function Home() {
                   <AddTodoForm onAdd={handleAdd} user={user} />
 
                   {todos.length === 0 ? (
-                    <p className="mt-4 rounded-2xl border border-dashed border-white/10 px-4 py-8 text-center text-slate-300">
-                      No todos yet. Add one above.
-                    </p>
+                    <div className="rounded-3xl border border-dashed border-white/10 bg-slate-950/40 px-4 py-10 text-center text-slate-300">
+                      No todos yet. Add one above to get started.
+                    </div>
                   ) : (
                     <div className="mt-4">
                       {todos.map((todo) => (
@@ -207,27 +213,44 @@ export default function Home() {
               )}
             </section>
 
-            <aside className="rounded-3xl border border-white/10 bg-slate-900/60 p-6 text-sm text-slate-300">
+            <aside className="rounded-[1.75rem] border border-white/10 bg-slate-900/60 p-5 sm:p-6">
               <p className="text-xs uppercase tracking-[0.35em] text-cyan-300/80">
                 Mode
               </p>
-              <ul className="mt-4 space-y-3 leading-6">
-                {firebaseMissingConfig ? (
-                  <li>
-                    Firebase auth is not configured yet. Add the required env vars to enable sign in and secure todo syncing.
-                  </li>
-                ) : !canUseFirebaseAuth ? (
-                  <li>Firebase auth is still initializing.</li>
-                ) : (
-                  <>
-                    <li>Firebase auth is initialized in the shared client module.</li>
-                    <li>The page waits for a signed-in user before loading todos.</li>
-                    <li>Login and sign up are handled in one modal with separate modes.</li>
-                  </>
-                )}
-              </ul>
+
+              <div className="mt-4 space-y-4 text-sm leading-6 text-slate-300">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="font-medium text-white">Workspace state</p>
+                  <p className="mt-1">
+                    {firebaseMissingConfig
+                      ? "Firebase auth is not configured yet. Add the required env vars to enable sign in and secure todo syncing."
+                      : !canUseFirebaseAuth
+                        ? "Firebase auth is still initializing."
+                        : user
+                          ? "You are signed in and the board is ready to sync changes."
+                          : "Sign in to unlock the synced todo board."}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="font-medium text-white">What you can do</p>
+                  <ul className="mt-2 space-y-2 text-slate-300">
+                    <li>Add tasks with the quick form.</li>
+                    <li>Edit, complete, or delete tasks inline.</li>
+                    <li>Use the auth modal to sign in or create an account.</li>
+                  </ul>
+                </div>
+              </div>
             </aside>
-          </div>
+          </main>
+
+          <AppFooter
+            todoCount={todos.length}
+            canUseFirebaseAuth={canUseFirebaseAuth}
+            authReady={authReady}
+            firebaseMissingConfig={firebaseMissingConfig}
+            user={user}
+          />
 
           {canUseFirebaseAuth ? (
             <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />

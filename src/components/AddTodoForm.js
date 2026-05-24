@@ -45,20 +45,21 @@ export default function AddTodoForm({ onAdd, user }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 mb-6">
-      {/* Text input for the todo title */}
+    <form
+      onSubmit={handleSubmit}
+      className="mb-6 flex flex-col gap-3 sm:flex-row"
+    >
       <input
         type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Add a new todo..."
-        className="flex-1 border border-gray-300 text-black rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="flex-1 rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-cyan-400"
       />
 
-      {/* Submit button */}
       <button
         type="submit"
-        className="bg-blue-500 text-white px-5 py-2 rounded-lg hover:bg-blue-600 transition"
+        className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-cyan-400 to-sky-500 px-5 py-3 font-semibold text-slate-950 transition hover:from-cyan-300 hover:to-sky-400 sm:min-w-32"
       >
         Add
       </button>
