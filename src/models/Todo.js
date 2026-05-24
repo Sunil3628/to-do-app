@@ -11,6 +11,19 @@ import mongoose from "mongoose";
 // Schema = the blueprint for a Todo document
 const TodoSchema = new mongoose.Schema(
   {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+
+    ownerUid: {
+      type: String,
+      required: true,
+      index: true,
+    },
+
     title: {
       type: String,
       required: [true, "Title is required"], // won't save without a title

@@ -9,8 +9,9 @@
 "use client"; // This component runs in the browser (not on the server)
 
 import { useState } from "react";
+import { getFirebaseAuthHeaders } from "@/lib/firebase";
 
-export default function AddTodoForm({ onAdd }) {
+export default function AddTodoForm({ onAdd, user }) {
   // "title" holds the current value of the input field
   const [title, setTitle] = useState("");
 
@@ -22,9 +23,14 @@ export default function AddTodoForm({ onAdd }) {
     if (!title.trim()) return;
 
     // Send a POST request to the API to create a new todo
+    const headers = {
+      "Content-Type": "application/json",
+      ...(await getFirebaseAuthHeaders(user)),
+    };
+
     const res = await fetch("/api/todos", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({ title }),
     });
 

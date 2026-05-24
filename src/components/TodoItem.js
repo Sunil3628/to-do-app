@@ -11,8 +11,9 @@
 "use client"; // This component runs in the browser
 
 import { useState } from "react";
+import { getFirebaseAuthHeaders } from "@/lib/firebase";
 
-export default function TodoItem({ todo, onUpdate, onDelete }) {
+export default function TodoItem({ todo, user, onUpdate, onDelete }) {
   // Track whether we're in edit mode for this todo
   const [isEditing, setIsEditing] = useState(false);
 
@@ -22,9 +23,14 @@ export default function TodoItem({ todo, onUpdate, onDelete }) {
   // ---- Toggle completed status ----
   async function handleToggle() {
     // Send a PUT request to flip the completed flag
+    const headers = {
+      "Content-Type": "application/json",
+      ...(await getFirebaseAuthHeaders(user)),
+    };
+
     const res = await fetch(`/api/todos/${todo._id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({ completed: !todo.completed }),
     });
 
@@ -39,9 +45,14 @@ export default function TodoItem({ todo, onUpdate, onDelete }) {
     // Don't save if the input is empty
     if (!editTitle.trim()) return;
 
+    const headers = {
+      "Content-Type": "application/json",
+      ...(await getFirebaseAuthHeaders(user)),
+    };
+
     const res = await fetch(`/api/todos/${todo._id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({ title: editTitle }),
     });
 
@@ -54,7 +65,9 @@ export default function TodoItem({ todo, onUpdate, onDelete }) {
 
   // ---- Delete this todo ----
   async function handleDelete() {
-    await fetch(`/api/todos/${todo._id}`, { method: "DELETE" });
+    const headers = await getFirebaseAuthHeaders(user);
+
+    await fetch(`/api/todos/${todo._id}`, { method: "DELETE", headers });
 
     // Notify the parent to remove this todo from the list
     onDelete(todo._id);
